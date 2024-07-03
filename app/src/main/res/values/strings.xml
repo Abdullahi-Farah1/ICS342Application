@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">ICS342Application</string>
+    <string name="app_name">Todo</string>
+    <string name="todo">Todo</string>
+    <string name="new_todo">New Todo</string>
+    <string name="clear_text">Clear text</string>
+    <string name="please_enter_todo">Please Enter an Item</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
 </resources>
