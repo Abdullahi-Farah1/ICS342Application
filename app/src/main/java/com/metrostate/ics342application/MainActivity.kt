@@ -18,6 +18,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.livedata.observeAsState
 import com.metrostate.ics342application.ui.theme.ICS342ApplicationTheme
 import com.metrostate.ics342application.ui.theme.LightBlue
 import kotlinx.coroutines.launch
@@ -27,19 +29,26 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            Content()
+            val viewModel: TodoListViewModel = viewModel()
+
+            // Fetch todos when the activity is created
+            val userId = "userId"  // Replace with actual userId
+            val apiKey = "63e93e2f-2888-492f-af0d-d744e4bb4025"  // Replace with actual apiKey
+            viewModel.fetchTodos(userId, apiKey)
+
+            MainScreen()
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Content() {
+fun Content(viewModel: TodoListViewModel = viewModel()) {
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
     var todoText by remember { mutableStateOf("") }
-    var todoItems = remember { mutableStateListOf<Pair<String, Boolean>>() }
+    val todoItems by viewModel.todoItems.observeAsState(emptyList())
     var showError by remember { mutableStateOf(false) }
 
     ICS342ApplicationTheme {
@@ -49,13 +58,14 @@ fun Content() {
             FloatingActionButton(onClick = { showBottomSheet = true }) {
                 Icon(
                     painter = painterResource(id = R.drawable.add_24dp_fill0_wght400_grad0_opsz24),
-                    contentDescription = " "
+                    contentDescription = "Add Todo"
                 )
             }
         }, content = { paddingValues ->
             Box(modifier = Modifier.padding(paddingValues)) {
                 MainContent(todoItems, onToggle = { index, isChecked ->
-                    todoItems[index] = todoItems[index].copy(second = isChecked)
+                    val todoItem = todoItems[index]
+                    viewModel.updateTodo(todoItem.id, isChecked)
                 })
                 if (showBottomSheet) {
                     ModalBottomSheet(
@@ -96,7 +106,9 @@ fun Content() {
                                     if (todoText.isBlank()) {
                                         showError = true
                                     } else {
-                                        todoItems.add(todoText to false)
+                                        val userId = "userId"  // Replace with actual userId
+                                        val apiKey = "apiKey"  // Replace with actual apiKey
+                                        viewModel.createTodo(userId, apiKey, todoText)
                                         showBottomSheet = false
                                         todoText = ""
                                         showError = false
@@ -144,7 +156,7 @@ fun TopBar() {
 
 @Composable
 fun MainContent(
-    todoItems: List<Pair<String, Boolean>>,
+    todoItems: List<TodoItem>,
     onToggle: (Int, Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -172,11 +184,11 @@ fun MainContent(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = todoItem.first,
+                            text = todoItem.title,
                             modifier = Modifier.weight(1f),
                         )
 
-                        Checkbox(checked = todoItem.second,
+                        Checkbox(checked = todoItem.completed,
                             onCheckedChange = { isChecked -> onToggle(index, isChecked) })
 
                     }
