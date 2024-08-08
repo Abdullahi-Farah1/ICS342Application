@@ -17,7 +17,7 @@ fun MainScreen() {
             CreateAccountScreen(onCreateSuccess = { navController.navigate("todolist") }, navController = navController)
         }
         composable("todolist") {
-            ToDoListScreen() // Your TodoList content
+            ToDoListScreen()
         }
     }
 }

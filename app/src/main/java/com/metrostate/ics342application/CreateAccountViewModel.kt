@@ -13,7 +13,7 @@ class CreateAccountViewModel : ViewModel() {
         private set
 
     fun registerUser(name: String, email: String, password: String) {
-        val apiKey = "4f10a22c-565b-40cc-8885-78a9d5fc34bb"
+        val apiKey = "afb8eb8d-2a63-4b0d-9aa3-c63cad5b7412"
         viewModelScope.launch {
             try {
                 val response = RetrofitInstance.api.registerUser(

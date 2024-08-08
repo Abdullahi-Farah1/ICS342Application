@@ -21,7 +21,7 @@ class TodoListViewModel : ViewModel() {
                 val response = RetrofitInstance.api.getTodos(userId, apiKey, authHeader)
                 if (response.isSuccessful) {
                     response.body()?.let {
-                        todoItems = it  // This should now only contain the todos for the specific user
+                        todoItems = it
                         Log.d("TodoListViewModel", "Fetched todos successfully: ${it.size} items")
                     }
                 } else {
@@ -43,7 +43,7 @@ class TodoListViewModel : ViewModel() {
                     userId, apiKey, authHeader, TodoRequest(description)
                 )
                 if (response.isSuccessful) {
-                    fetchTodos(userId, apiKey, token) // Refresh list after adding a new todo
+                    fetchTodos(userId, apiKey, token)
                     Log.d("TodoListViewModel", "Todo created successfully")
                 } else {
                     Log.e("TodoListViewModel", "Failed to create todo: ${response.code()} - ${response.message()}")
@@ -60,14 +60,14 @@ class TodoListViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val authHeader = "Bearer $token"
-                val todoRequest = TodoRequest(description, completed)  // Include both description and completed in the request
+                val todoRequest = TodoRequest(description, completed)
                 Log.d("TodoListViewModel", "Request body: $todoRequest")
                 val response = RetrofitInstance.api.updateTodo(
                     userId, todoId, apiKey, authHeader, todoRequest
                 )
                 if (response.isSuccessful) {
                     Log.d("TodoListViewModel", "Todo updated successfully")
-                    fetchTodos(userId, apiKey, token) // Refresh list after updating a todo
+                    fetchTodos(userId, apiKey, token)
                 } else {
                     Log.e("TodoListViewModel", "Failed to update todo: ${response.code()} - ${response.message()}")
                     response.errorBody()?.let {

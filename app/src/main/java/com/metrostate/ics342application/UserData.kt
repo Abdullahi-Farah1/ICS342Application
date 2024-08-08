@@ -7,27 +7,7 @@ data class User(
     val enabled: Any,
     val token: String,
     val admin: Any,
-) {
-    val isEnabled: Boolean
-        get() = when (enabled) {
-            is Boolean -> enabled
-            is Number -> enabled.toInt() != 0
-            else -> false
-        }
-
-    val isAdmin: Boolean
-        get() = when (admin) {
-            is Boolean -> admin
-            is Number -> admin.toInt() != 0
-            else -> false
-        }
-
-    val enabledAsInt: Int
-        get() = if (isEnabled) 1 else 0
-
-    val adminAsInt: Int
-        get() = if (isAdmin) 1 else 0
-}
+)
 
 data class RegisterRequest(
     val email: String,

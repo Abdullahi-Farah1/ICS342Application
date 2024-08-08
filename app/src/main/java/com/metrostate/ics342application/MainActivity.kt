@@ -1,14 +1,11 @@
 package com.metrostate.ics342application
 
-import android.content.Context
+
 import android.os.Bundle
-import android.view.inputmethod.InputMethodManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -16,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -50,7 +46,6 @@ fun ToDoListScreen(viewModel: TodoListViewModel = viewModel()) {
     var showError by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // Fetching userId and token from DataStore
     LaunchedEffect(Unit) {
         val userId = context.dataStore.data.map { preferences ->
             preferences[stringPreferencesKey("user_id")] ?: ""
@@ -58,7 +53,7 @@ fun ToDoListScreen(viewModel: TodoListViewModel = viewModel()) {
         val token = context.dataStore.data.map { preferences ->
             preferences[stringPreferencesKey("auth_token")] ?: ""
         }.first()
-        val apiKey = "4f10a22c-565b-40cc-8885-78a9d5fc34bb"
+        val apiKey = "afb8eb8d-2a63-4b0d-9aa3-c63cad5b7412"
         viewModel.fetchTodos(userId, apiKey, token)
     }
 
@@ -69,7 +64,7 @@ fun ToDoListScreen(viewModel: TodoListViewModel = viewModel()) {
             FloatingActionButton(onClick = { showBottomSheet = true }) {
                 Icon(
                     painter = painterResource(id = R.drawable.add_24dp_fill0_wght400_grad0_opsz24),
-                    contentDescription = "Add Todo"
+                    contentDescription = stringResource(id = R.string.add_todo)
                 )
             }
         }, content = { paddingValues ->
@@ -83,7 +78,7 @@ fun ToDoListScreen(viewModel: TodoListViewModel = viewModel()) {
                         val token = context.dataStore.data.map { preferences ->
                             preferences[stringPreferencesKey("auth_token")] ?: ""
                         }.first()
-                        val apiKey = "4f10a22c-565b-40cc-8885-78a9d5fc34bb"
+                        val apiKey = "afb8eb8d-2a63-4b0d-9aa3-c63cad5b7412"
                         viewModel.updateTodo(userId, todoItem.id, apiKey, todoItem.description, isChecked, token)
                     }
                 })
@@ -134,7 +129,7 @@ fun ToDoListScreen(viewModel: TodoListViewModel = viewModel()) {
                                             val token = context.dataStore.data.map { preferences ->
                                                 preferences[stringPreferencesKey("auth_token")] ?: ""
                                             }.first()
-                                            val apiKey = "4f10a22c-565b-40cc-8885-78a9d5fc34bb"
+                                            val apiKey = "afb8eb8d-2a63-4b0d-9aa3-c63cad5b7412"
                                             viewModel.createTodo(userId, apiKey, todoText, token)
                                             showBottomSheet = false
                                             todoText = ""
@@ -161,9 +156,6 @@ fun ToDoListScreen(viewModel: TodoListViewModel = viewModel()) {
         })
     }
 }
-
-
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -244,3 +236,4 @@ fun TodoCard(content: @Composable () -> Unit) {
         content()
     }
 }
+

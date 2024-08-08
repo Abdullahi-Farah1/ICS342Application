@@ -20,14 +20,14 @@ interface TodoApiService {
     suspend fun getTodos(
         @Path("user_id") userId: String,
         @Query("apikey") apiKey: String,
-        @Header("Authorization") token: String // Authorization header
+        @Header("Authorization") token: String
     ): Response<List<TodoItem>>
 
     @POST("/api/users/{user_id}/todos")
     suspend fun createTodo(
         @Path("user_id") userId: String,
         @Query("apikey") apiKey: String,
-        @Header("Authorization") token: String, // Authorization header
+        @Header("Authorization") token: String,
         @Body todoRequest: TodoRequest
     ): Response<TodoItem>
 
@@ -36,7 +36,7 @@ interface TodoApiService {
         @Path("user_id") userId: String,
         @Path("id") todoId: Int,
         @Query("apikey") apiKey: String,
-        @Header("Authorization") token: String, // Authorization header
+        @Header("Authorization") token: String,
         @Body todoRequest: TodoRequest
     ): Response<TodoItem>
 }

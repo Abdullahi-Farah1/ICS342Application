@@ -17,7 +17,7 @@ class LoginViewModel : ViewModel() {
         private set
 
     fun loginUser(email: String, password: String, context: Context) {
-        val apiKey = "4f10a22c-565b-40cc-8885-78a9d5fc34bb"
+        val apiKey = "afb8eb8d-2a63-4b0d-9aa3-c63cad5b7412"
         viewModelScope.launch {
             try {
                 val response = RetrofitInstance.api.loginUser(LoginRequest(email, password), apiKey)
@@ -25,7 +25,7 @@ class LoginViewModel : ViewModel() {
                     user = response.body()
                     Log.d("LoginUser", "User object assigned successfully: $user")
 
-                    // Store token and user ID in DataStore
+
                     user?.let {
                         context.dataStore.edit { preferences ->
                             preferences[stringPreferencesKey("auth_token")] = it.token
