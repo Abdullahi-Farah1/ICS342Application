@@ -1,3 +1,19 @@
 <resources>
-    <string name="app_name">ICS342Application</string>
+    <string name="app_name">Todo</string>
+    <string name="todo">Todo</string>
+    <string name="new_todo">New Todo</string>
+    <string name="clear_text">Clear text</string>
+    <string name="please_enter_todo">Please Enter an Item</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="name_label">Name</string>
+    <string name="email_label">Email</string>
+    <string name="password_label">Password</string>
+    <string name="create_account_button">Create Account</string>
+    <string name="error_creating_account">Error creating account. Please try again.</string>
+    <string name="log_in_button">Log In</string>
+    <string name="error_logging_in">Error logging in. Please check your email and password.</string>
+    <string name="show_password">Show password</string>
+    <string name="hide_password">Hide password</string>
+    <string name="add_todo">Add Todo</string>
 </resources>
