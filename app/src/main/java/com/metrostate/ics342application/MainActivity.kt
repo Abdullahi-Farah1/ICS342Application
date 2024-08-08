@@ -1,6 +1,8 @@
 package com.metrostate.ics342application
 
+import android.content.Context
 import android.os.Bundle
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -13,29 +15,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.runtime.livedata.observeAsState
 import com.metrostate.ics342application.ui.theme.ICS342ApplicationTheme
 import com.metrostate.ics342application.ui.theme.LightBlue
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import androidx.datastore.preferences.core.stringPreferencesKey
+import com.metrostate.ics342application.DataStoreUtils.dataStore
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val viewModel: TodoListViewModel = viewModel()
-
-            // Fetch todos when the activity is created
-            val userId = "userId"  // Replace with actual userId
-            val apiKey = "63e93e2f-2888-492f-af0d-d744e4bb4025"  // Replace with actual apiKey
-            viewModel.fetchTodos(userId, apiKey)
-
             MainScreen()
         }
     }
@@ -43,13 +42,25 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Content(viewModel: TodoListViewModel = viewModel()) {
+fun ToDoListScreen(viewModel: TodoListViewModel = viewModel()) {
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
     var showBottomSheet by remember { mutableStateOf(false) }
     var todoText by remember { mutableStateOf("") }
-    val todoItems by viewModel.todoItems.observeAsState(emptyList())
     var showError by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    // Fetching userId and token from DataStore
+    LaunchedEffect(Unit) {
+        val userId = context.dataStore.data.map { preferences ->
+            preferences[stringPreferencesKey("user_id")] ?: ""
+        }.first()
+        val token = context.dataStore.data.map { preferences ->
+            preferences[stringPreferencesKey("auth_token")] ?: ""
+        }.first()
+        val apiKey = "4f10a22c-565b-40cc-8885-78a9d5fc34bb"
+        viewModel.fetchTodos(userId, apiKey, token)
+    }
 
     ICS342ApplicationTheme {
         Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
@@ -63,9 +74,18 @@ fun Content(viewModel: TodoListViewModel = viewModel()) {
             }
         }, content = { paddingValues ->
             Box(modifier = Modifier.padding(paddingValues)) {
-                MainContent(todoItems, onToggle = { index, isChecked ->
-                    val todoItem = todoItems[index]
-                    viewModel.updateTodo(todoItem.id, isChecked)
+                MainContent(viewModel.todoItems, onToggle = { index, isChecked ->
+                    val todoItem = viewModel.todoItems[index]
+                    scope.launch {
+                        val userId = context.dataStore.data.map { preferences ->
+                            preferences[stringPreferencesKey("user_id")] ?: ""
+                        }.first()
+                        val token = context.dataStore.data.map { preferences ->
+                            preferences[stringPreferencesKey("auth_token")] ?: ""
+                        }.first()
+                        val apiKey = "4f10a22c-565b-40cc-8885-78a9d5fc34bb"
+                        viewModel.updateTodo(userId, todoItem.id, apiKey, todoItem.description, isChecked, token)
+                    }
                 })
                 if (showBottomSheet) {
                     ModalBottomSheet(
@@ -106,12 +126,20 @@ fun Content(viewModel: TodoListViewModel = viewModel()) {
                                     if (todoText.isBlank()) {
                                         showError = true
                                     } else {
-                                        val userId = "userId"  // Replace with actual userId
-                                        val apiKey = "apiKey"  // Replace with actual apiKey
-                                        viewModel.createTodo(userId, apiKey, todoText)
-                                        showBottomSheet = false
-                                        todoText = ""
-                                        showError = false
+
+                                        scope.launch {
+                                            val userId = context.dataStore.data.map { preferences ->
+                                                preferences[stringPreferencesKey("user_id")] ?: ""
+                                            }.first()
+                                            val token = context.dataStore.data.map { preferences ->
+                                                preferences[stringPreferencesKey("auth_token")] ?: ""
+                                            }.first()
+                                            val apiKey = "4f10a22c-565b-40cc-8885-78a9d5fc34bb"
+                                            viewModel.createTodo(userId, apiKey, todoText, token)
+                                            showBottomSheet = false
+                                            todoText = ""
+                                            showError = false
+                                        }
                                     }
                                 }, modifier = Modifier.fillMaxWidth()) {
                                     Text(stringResource(id = R.string.save))
@@ -125,7 +153,6 @@ fun Content(viewModel: TodoListViewModel = viewModel()) {
                                 ) {
                                     Text(stringResource(id = R.string.cancel))
                                 }
-
                             }
                         }
                     }
@@ -134,6 +161,9 @@ fun Content(viewModel: TodoListViewModel = viewModel()) {
         })
     }
 }
+
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -184,11 +214,11 @@ fun MainContent(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = todoItem.title,
+                            text = todoItem.description,
                             modifier = Modifier.weight(1f),
                         )
 
-                        Checkbox(checked = todoItem.completed,
+                        Checkbox(checked = todoItem.isCompleted,
                             onCheckedChange = { isChecked -> onToggle(index, isChecked) })
 
                     }
@@ -213,10 +243,4 @@ fun TodoCard(content: @Composable () -> Unit) {
     ) {
         content()
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ContentPreview() {
-    Content()
 }

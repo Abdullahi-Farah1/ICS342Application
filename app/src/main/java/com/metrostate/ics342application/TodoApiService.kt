@@ -14,26 +14,29 @@ interface TodoApiService {
     suspend fun loginUser(
         @Body loginRequest: LoginRequest,
         @Query("apikey") apiKey: String
-    ): Response<LoginResponse>
+    ): Response<User>
 
     @GET("/api/users/{user_id}/todos")
     suspend fun getTodos(
         @Path("user_id") userId: String,
-        @Query("apikey") apiKey: String
+        @Query("apikey") apiKey: String,
+        @Header("Authorization") token: String // Authorization header
     ): Response<List<TodoItem>>
 
     @POST("/api/users/{user_id}/todos")
     suspend fun createTodo(
         @Path("user_id") userId: String,
         @Query("apikey") apiKey: String,
+        @Header("Authorization") token: String, // Authorization header
         @Body todoRequest: TodoRequest
     ): Response<TodoItem>
 
     @PUT("/api/users/{user_id}/todos/{id}")
     suspend fun updateTodo(
         @Path("user_id") userId: String,
-        @Path("id") todoId: String,
+        @Path("id") todoId: Int,
         @Query("apikey") apiKey: String,
+        @Header("Authorization") token: String, // Authorization header
         @Body todoRequest: TodoRequest
     ): Response<TodoItem>
 }

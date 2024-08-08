@@ -1,5 +1,6 @@
 package com.metrostate.ics342application
 
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -12,18 +13,18 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import com.metrostate.ics342application.DataStoreUtils.dataStore
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = viewModel(),
     onLoginSuccess: () -> Unit,
-    navController: NavController  // Add NavController as a parameter
+    navController: NavController
 ) {
     val context = LocalContext.current
     var email by remember { mutableStateOf("") }
@@ -33,6 +34,9 @@ fun LoginScreen(
 
     val scope = rememberCoroutineScope()
 
+    // Directly use the user state from the ViewModel
+    val user = viewModel.user
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -40,13 +44,15 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        TextField(
+        OutlinedTextField( // Changed to OutlinedTextField
             value = email,
             onValueChange = { email = it },
             label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp) // Added space between fields
         )
-        TextField(
+        OutlinedTextField( // Changed to OutlinedTextField
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
@@ -61,22 +67,11 @@ fun LoginScreen(
             },
             modifier = Modifier.fillMaxWidth()
         )
+        Spacer(modifier = Modifier.height(16.dp)) // Additional spacing before the button
         Button(
             onClick = {
                 if (email.isNotBlank() && password.isNotBlank()) {
-                    viewModel.loginUser(email, password)
-                    if (viewModel.user != null) {
-                        scope.launch {
-                            // Store token and user id in DataStore
-                            context.dataStore.edit { preferences ->
-                                preferences[stringPreferencesKey("user_id")] = viewModel.user!!.id
-                                preferences[stringPreferencesKey("api_key")] = viewModel.user!!.token
-                            }
-                            onLoginSuccess()
-                        }
-                    } else {
-                        showError = true
-                    }
+                    viewModel.loginUser(email, password, context)
                 } else {
                     showError = true
                 }
@@ -85,6 +80,7 @@ fun LoginScreen(
         ) {
             Text("Log In")
         }
+
         if (showError) {
             Text(
                 text = "Error logging in. Please check your email and password.",
@@ -95,11 +91,26 @@ fun LoginScreen(
         Spacer(modifier = Modifier.height(16.dp))
         TextButton(
             onClick = {
-                navController.navigate("createAccount")  // Navigate to CreateAccountScreen
+                navController.navigate("createAccount")
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Create Account")
         }
     }
+
+    // Handle navigation when user is successfully logged in
+    LaunchedEffect(user) {
+        user?.let {
+            scope.launch {
+                context.dataStore.edit { preferences ->
+                    preferences[stringPreferencesKey("user_id")] = it.id.toString()
+                    preferences[stringPreferencesKey("auth_token")] = it.token
+                }
+                onLoginSuccess()
+                navController.navigate("todolist")
+            }
+        }
+    }
 }
+

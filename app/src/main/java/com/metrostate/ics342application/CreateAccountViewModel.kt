@@ -1,20 +1,23 @@
 package com.metrostate.ics342application
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import android.util.Log
 
 class CreateAccountViewModel : ViewModel() {
-    var user: User? = null
+    var user by mutableStateOf<User?>(null)
         private set
 
     fun registerUser(name: String, email: String, password: String) {
-        val apiKey = "63e93e2f-2888-492f-af0d-d744e4bb4025"
+        val apiKey = "4f10a22c-565b-40cc-8885-78a9d5fc34bb"
         viewModelScope.launch {
             try {
                 val response = RetrofitInstance.api.registerUser(
-                    RegisterRequest(name, email, password),
+                    RegisterRequest(email,name, password),
                     apiKey
                 )
                 if (response.isSuccessful) {
@@ -25,18 +28,17 @@ class CreateAccountViewModel : ViewModel() {
                             email = it.email,
                             name = it.name,
                             enabled = it.enabled,
-                            admin = it.admin
+                            admin = it.admin,
                         )
                         Log.d("RegisterUser", "User object assigned successfully: $user")
                     }
                 } else {
                     Log.d("RegisterUser", "API Error: ${response.code()} - ${response.message()}")
-                    // Handle API error
                 }
             } catch (e: Exception) {
                 Log.d("RegisterUser", "Network Exception: ${e.message}")
-                // Handle network error
             }
         }
     }
+
 }

@@ -24,16 +24,19 @@ import com.metrostate.ics342application.DataStoreUtils.dataStore
 fun CreateAccountScreen(
     viewModel: CreateAccountViewModel = viewModel(),
     onCreateSuccess: () -> Unit,
-    navController: NavController  // Add NavController parameter
+    navController: NavController
 ) {
     val context = LocalContext.current
-    var name by remember { mutableStateOf("") }  // Add name state
+    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(false) }
     var showError by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
+
+    // Directly use the user state from the ViewModel
+    val user = viewModel.user
 
     Column(
         modifier = Modifier
@@ -42,19 +45,23 @@ fun CreateAccountScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        TextField(
+        OutlinedTextField( // Changed to OutlinedTextField
             value = name,
             onValueChange = { name = it },
             label = { Text("Name") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp) // Added space between fields
         )
-        TextField(
+        OutlinedTextField( // Changed to OutlinedTextField
             value = email,
             onValueChange = { email = it },
             label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp) // Added space between fields
         )
-        TextField(
+        OutlinedTextField( // Changed to OutlinedTextField
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
@@ -69,22 +76,11 @@ fun CreateAccountScreen(
             },
             modifier = Modifier.fillMaxWidth()
         )
+        Spacer(modifier = Modifier.height(16.dp)) // Additional spacing before the button
         Button(
             onClick = {
                 if (name.isNotBlank() && email.isNotBlank() && password.isNotBlank()) {
                     viewModel.registerUser(name, email, password)
-                    if (viewModel.user != null) {
-                        scope.launch {
-                            context.dataStore.edit { preferences ->
-                                preferences[stringPreferencesKey("user_id")] = viewModel.user!!.id
-                                preferences[stringPreferencesKey("api_key")] = viewModel.user!!.token
-                            }
-                            onCreateSuccess()
-                            navController.navigate("todolist")  // Navigate to TodoList
-                        }
-                    } else {
-                        showError = true
-                    }
                 } else {
                     showError = true
                 }
@@ -104,11 +100,25 @@ fun CreateAccountScreen(
         Spacer(modifier = Modifier.height(16.dp))
         TextButton(
             onClick = {
-                navController.navigate("login")  // Navigate to LoginScreen
+                navController.navigate("login")
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Log In")
+        }
+    }
+
+    // Handle navigation when user is successfully registered
+    LaunchedEffect(user) {
+        user?.let {
+            scope.launch {
+                context.dataStore.edit { preferences ->
+                    preferences[stringPreferencesKey("user_id")] = it.id.toString()
+                    preferences[stringPreferencesKey("auth_token")] = it.token // Use "auth_token" for consistency
+                }
+                onCreateSuccess()
+                navController.navigate("todolist")
+            }
         }
     }
 }
