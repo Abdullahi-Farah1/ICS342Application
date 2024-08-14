@@ -12,7 +12,7 @@ class TodoListViewModelTest {
 
     @Test
     fun `fetchTodos() should update on successful fetch`() = runTest {
-        // Arrange
+        
         val mockResponse = mockk<Response<List<TodoItem>>>()
         val todoItems = listOf(TodoItem(1, "Test Todo", false))
         coEvery { mockResponse.isSuccessful } returns true
