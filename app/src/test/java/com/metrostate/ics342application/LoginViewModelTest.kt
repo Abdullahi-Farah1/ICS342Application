@@ -24,7 +24,7 @@ class LoginViewModelTest {
 
     @Test
     fun `loginUser() should assign User object and save token on successful login`() = runTest {
-        // Arrange
+
         val mockResponse = mockk<Response<User>>()
         val mockUser = User(1, "John Doe", "john@example.com", true, "token123", false)
         coEvery { mockResponse.isSuccessful } returns true
